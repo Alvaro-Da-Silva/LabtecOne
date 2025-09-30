@@ -1,4 +1,5 @@
 import Keycloak, { KeycloakInitOptions, KeycloakOnLoad } from "keycloak-js";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
 class KeycloakSingleton {
 	private static instance: Keycloak;
@@ -22,8 +23,12 @@ export class KeycloakService {
 			onLoad: "check-sso" as KeycloakOnLoad,
 			silentCheckSsoRedirectUri:
 				typeof window !== "undefined"
-					? `${window.location.origin}/silent-check-sso.html`
-					: undefined
+					? `${window.location.origin}${baseUrl}/silent-check-sso.html`
+					: undefined,
+				redirectUri:
+				typeof window !== "undefined"
+					? `${window.location.origin}${baseUrl}`
+					: undefined,
 		};
 		const authenticated = await kc.init(options);
 		return authenticated;

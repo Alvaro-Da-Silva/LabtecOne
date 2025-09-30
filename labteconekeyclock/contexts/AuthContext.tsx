@@ -2,11 +2,14 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { KeycloakSingleton, KeycloakService } from "../lib/keycloack";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 interface AuthContextType {
 	isAuthenticated: boolean;
 	username?: string;
 	email?: string;
 	token?: string;
+	firstName?: string;
+	lastName?: string;
 	login: () => void;
 	logout: () => void;
 }
@@ -18,6 +21,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const [username, setUsername] = useState<string>();
 	const [email, setEmail] = useState<string>();
 	const [token, setToken] = useState<string>();
+	const [firstName, setFirstName] = useState<string>();
+  	const [lastName, setLastName] = useState<string>();
 
 	useEffect(() => {
 		const keycloakService = new KeycloakService();
@@ -30,6 +35,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 				setUsername(kc.tokenParsed?.preferred_username as string | undefined);
 				setEmail(kc.tokenParsed?.email as string | undefined);
 				setToken(kc.token as string | undefined);
+				setFirstName(kc.tokenParsed?.given_name as string | undefined);
+				setLastName(kc.tokenParsed?.family_name as string | undefined);
 			} else {
 				kc.login();
 			}
@@ -45,12 +52,14 @@ return (
 				username,
 				email,
 				token,
+				firstName,
+				lastName,
 				login: () => kc.login(),
 				logout: () =>
 					kc.logout({
 						redirectUri:
 							typeof window !== "undefined"
-								? window.location.origin
+								? window.location.origin + baseUrl
 								: undefined
 					})
 			}}
@@ -65,3 +74,4 @@ export const useAuth = () => {
 	if (!context) throw new Error("useAuth deve ser usado dentro de AuthProvider");
 	return context;
 };
+
