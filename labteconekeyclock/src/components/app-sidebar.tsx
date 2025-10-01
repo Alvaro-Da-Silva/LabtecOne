@@ -33,16 +33,18 @@ import {
     CommandSeparator,
 } from "./ui/command";
 
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
+
 const data = {
     NavMain: [
         {
-            title: "Apps",
-            url: "dev/one/dashboard",
+            title: "Home",
+            url: `${baseUrl}`,
             icon: LayoutDashboard,
         },
         {
             title: "Itens",
-            url: "dev/one/itens",
+            url: `${baseUrl}/itens`,
             icon: TableOfContents,
         }
     ],
