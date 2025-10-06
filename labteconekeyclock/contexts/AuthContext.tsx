@@ -10,6 +10,7 @@ interface AuthContextType {
 	token?: string;
 	firstName?: string;
 	lastName?: string;
+	tokenParsed?: any;
 	login: () => void;
 	logout: () => void;
 }
@@ -21,6 +22,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const [username, setUsername] = useState<string>();
 	const [email, setEmail] = useState<string>();
 	const [token, setToken] = useState<string>();
+	const [tokenParsed, setTokenParsed] = useState<any>();
 	const [firstName, setFirstName] = useState<string>();
   	const [lastName, setLastName] = useState<string>();
 
@@ -35,6 +37,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 				setUsername(kc.tokenParsed?.preferred_username as string | undefined);
 				setEmail(kc.tokenParsed?.email as string | undefined);
 				setToken(kc.token as string | undefined);
+				setTokenParsed(kc.tokenParsed);
 				setFirstName(kc.tokenParsed?.given_name as string | undefined);
 				setLastName(kc.tokenParsed?.family_name as string | undefined);
 			} else {
@@ -52,6 +55,7 @@ return (
 				username,
 				email,
 				token,
+				tokenParsed,
 				firstName,
 				lastName,
 				login: () => kc.login(),

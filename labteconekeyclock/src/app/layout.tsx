@@ -7,9 +7,6 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
-// Components
-import AppSidebar from "@/components/app-sidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
 
 // Fonts
 const geistSans = Geist({
@@ -41,15 +38,12 @@ export default function RootLayout({
         <AuthProvider>
           {
             // Sidebar and Group Providers
-            <SidebarProvider>
               <GroupProvider>
 
                 {/* Group Sidebar */}
-                <AppSidebar />
                 {children}
                 
               </GroupProvider>
-            </SidebarProvider>
           }
         </AuthProvider>
       </body>
