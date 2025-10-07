@@ -1,5 +1,6 @@
 import { StaticImageData } from 'next/image';
 import BgEletric from '../../public/loginBackgroundEletric.svg';
+import BgKahoot from '../../public/Kahoot.png';
 
 export interface CardData {
   id: number;
@@ -20,10 +21,10 @@ export const defaultCards: CardData[] = [
     },
     {
         id: 2,
-        title: "EduMind - Gestão Educacional",
+        title: "EduMind - Kahoot Educacional",
         description: "Plataforma completa para gestão de instituições de ensino, controle acadêmico e administrativa.",
         link: "https://edumind.com.br/",
-        foto: BgEletric
+        foto: BgKahoot
     },
     {
         id: 3,

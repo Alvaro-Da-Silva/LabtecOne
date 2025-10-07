@@ -8,7 +8,8 @@ import { useState } from 'react';
 
 // UI
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Spinner } from "@/components/ui/spinner"
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CircleAlert, EllipsisVertical, Import, LogOut, Pencil, Settings, Trash2, UserRoundCog,Camera, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -40,7 +41,7 @@ interface PageProps {
 }
 
 export default function Page({ cardsData }: PageProps) {
-    const { email, username, firstName, lastName, logout, token } = useAuth();
+    const { email, username, firstName, lastName, logout, isAuthenticated } = useAuth();
 
     // State de pesquisa
     const [searchTerm, setSearchTerm] = useState('');
@@ -103,35 +104,34 @@ export default function Page({ cardsData }: PageProps) {
     };
 
 
-
     return (
         <>
             <div className=''>
-                <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 h-14 border-b bg-white shadow-sm">
+                <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-3 sm:px-5 h-14 border-b bg-white shadow-sm">
                     <div className="flex items-center gap-2">
                     </div>
                     
                     <div className="flex flex-1 items-center justify-between">
-                        <div>
+                        <div className="flex-shrink-0">
                             <Image
                              src={LogoLabTec}
                              alt="Logo LabtecOne"
-                             width={100}
-                             height={24}
-                             className="object-contain"
+                             width={80}
+                             height={20}
+                             className="object-contain sm:w-[100px] sm:h-[24px]"
                             />
                         </div>
 
 
                         <DropdownMenu>
-                            <div className='flex flex-row items-center gap-5'>
+                            <div className='flex flex-row items-center gap-2 sm:gap-5'>
                                 
-                                <div className="relative w-64 max-w-sm">
-                                    <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                                <div className="relative w-32 sm:w-48 md:w-64 max-w-sm">
+                                    <Search className="absolute left-3 top-2.5 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                                     <Input
                                         type="text"
                                         placeholder="Pesquisar..."
-                                        className="pl-10"
+                                        className="pl-8 sm:pl-10 text-sm"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
@@ -249,32 +249,42 @@ export default function Page({ cardsData }: PageProps) {
 
                 </header>
                 {/* Div para os cards de apps, compensando o header fixo com padding-top */}
-                <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 p-5 pt-20 flex-1 bg-background justify-items-center max-w-6xl mx-auto w-full`}>
-                    {currentCards.length > 0 ? (
-                        currentCards.map((card) => (
-                            <CardSites
-                                key={card.id}
-                                title={card.title}
-                                description={card.description}
-                                link={card.link}
-                                foto={card.foto}
-                            />
-                        ))
-                    ) : (
-                        <div className="col-span-full flex flex-col items-center justify-center py-12">
-                            <Search className="h-12 w-12 text-muted-foreground mb-4" />
-                            <h3 className="text-lg font-medium text-muted-foreground mb-2">
-                                Nenhum resultado encontrado
-                            </h3>
-                            <p className="text-sm text-muted-foreground text-center">
-                                Tente pesquisar com outros termos ou limpe a pesquisa
-                            </p>
+                <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3 sm:gap-5 p-3 sm:p-5 pt-16 sm:pt-20 flex-1 bg-background justify-items-center max-w-7xl mx-auto w-full`}>
+                    {!isAuthenticated ? (
+                        // Mostrar spinner centralizado apenas na área de cards enquanto não autenticado
+                        <div className="col-span-full flex items-center justify-center py-16 sm:py-24">
+                            <div className="flex flex-col items-center gap-2 sm:gap-3">
+                                <Spinner className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
+                                <span className="text-xs sm:text-sm text-muted-foreground">Carregando...</span>
+                            </div>
                         </div>
+                    ) : (
+                        currentCards.length > 0 ? (
+                            currentCards.map((card) => (
+                                <CardSites
+                                    key={card.id}
+                                    title={card.title}
+                                    description={card.description}
+                                    link={card.link}
+                                    foto={card.foto}
+                                />
+                            ))
+                        ) : (
+                            <div className="col-span-full flex flex-col items-center justify-center py-8 sm:py-12 px-4">
+                                <Search className="h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground mb-3 sm:mb-4" />
+                                <h3 className="text-base sm:text-lg font-medium text-muted-foreground mb-1 sm:mb-2 text-center">
+                                    Nenhum resultado encontrado
+                                </h3>
+                                <p className="text-xs sm:text-sm text-muted-foreground text-center max-w-xs sm:max-w-sm">
+                                    Tente pesquisar com outros termos ou limpe a pesquisa
+                                </p>
+                            </div>
+                        )
                     )}
                 </div>
                     {/* Paginação - só mostra se há resultados e mais de 1 página */}
-                    {filteredCards.length > 0 && totalPages > 1 && (
-                        <div className="m-4 flex items-center justify-center gap-2 lg:ml-0">
+                    {isAuthenticated && filteredCards.length > 0 && totalPages > 1 && (
+                        <div className="m-2 sm:m-4 flex items-center justify-center gap-1 sm:gap-2 lg:ml-0 flex-wrap">
                             <Button
                                 variant="default"
                                 className={`size-8 bg-white hover:bg-white hover:text-black transition-opacity ${
@@ -292,7 +302,7 @@ export default function Page({ cardsData }: PageProps) {
                                     <Button
                                         key={pageNumber}
                                         variant="outline"
-                                        className={`size-9 rounded-full ${
+                                        className={`size-8 sm:size-9 rounded-full text-xs sm:text-sm ${
                                             currentPage === pageNumber ? 'bg-[#0173F2] text-white hover:bg-[#0173F2] hover:text-white' : ''
                                         }`}
                                         size="icon"
