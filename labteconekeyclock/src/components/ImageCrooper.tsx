@@ -1,26 +1,33 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import Cropper from "react-easy-crop";
+import Cropper, { Area } from "react-easy-crop";
 import { Button } from "@/components/ui/button";
 
-export default function ImageCropper({ imageSrc, onSave, onCancel }: any) {
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+interface ImageCropperProps {
+  imageSrc: string;
+  onSave: (croppedImage: string) => void;
+  onCancel: () => void;
+}
 
-  const onCropComplete = useCallback((_: any, croppedAreaPixels: any) => {
+export default function ImageCropper({ imageSrc, onSave, onCancel }: ImageCropperProps) {
+  const [crop, setCrop] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState<number>(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+
+  const onCropComplete = useCallback((_: Area, croppedAreaPixels: Area) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
   const getCroppedImg = async () => {
+    if (!croppedAreaPixels) return;
+
     const image = new Image();
     image.src = imageSrc;
     await image.decode();
 
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-
     if (!ctx) return;
 
     canvas.width = croppedAreaPixels.width;
@@ -49,7 +56,7 @@ export default function ImageCropper({ imageSrc, onSave, onCancel }: any) {
           image={imageSrc}
           crop={crop}
           zoom={zoom}
-          aspect={1} 
+          aspect={1}
           onCropChange={setCrop}
           onZoomChange={setZoom}
           onCropComplete={onCropComplete}

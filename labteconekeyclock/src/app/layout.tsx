@@ -1,6 +1,7 @@
 // RootLayout Component
 import { AuthProvider } from "../../contexts/AuthContext";
 import { GroupProvider } from "../../contexts/GroupContext";
+import ClientWrapper from "./ClientWrapper"
 
 // Styles and Metadata
 import "./globals.css";
@@ -41,8 +42,10 @@ export default function RootLayout({
               <GroupProvider>
 
                 {/* Group Sidebar */}
-                {children}
-                
+                <ClientWrapper>
+                  {children}
+                </ClientWrapper>
+
               </GroupProvider>
           }
         </AuthProvider>

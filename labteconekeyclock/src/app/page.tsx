@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Spinner } from "@/components/ui/spinner"
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CircleAlert, EllipsisVertical, Import, LogOut, Pencil, Settings, Trash2, UserRoundCog,Camera, Search } from 'lucide-react';
+import { CircleAlert, LogOut, Settings,Camera, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import ImageCropper from '@/components/ImageCrooper';
 import {
@@ -32,16 +32,14 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import CardSites from '@/components/CardSites';
-import LogoLabTec from '../../public/logo-labtec.png'
+import LogoLabTec from '../../public/logo-labtec-sem-texto.png'
 import Image from 'next/image';
 import { CardData, defaultCards } from '@/data/cardsData';
 
-interface PageProps {
-  cardsData?: CardData[];
-}
 
-export default function Page({ cardsData }: PageProps) {
+export default function Page() {
     const { email, username, firstName, lastName, logout, isAuthenticated } = useAuth();
+    const version = process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0';
 
     // State de pesquisa
     const [searchTerm, setSearchTerm] = useState('');
@@ -51,7 +49,7 @@ export default function Page({ cardsData }: PageProps) {
     const [currentPage, setCurrentPage] = useState(1);
     
     // Const de dados e fallback caso não tenha dados 
-    const allCards: CardData[] = cardsData || defaultCards;
+    const allCards: CardData[] = defaultCards;
     
     // filtra os cards com base no termo de pesquisa
     const filteredCards = allCards.filter(card => 
@@ -112,14 +110,18 @@ export default function Page({ cardsData }: PageProps) {
                     </div>
                     
                     <div className="flex flex-1 items-center justify-between">
-                        <div className="flex-shrink-0">
+                        <div className="flex-shrink-0 flex items-center gap-2">
                             <Image
                              src={LogoLabTec}
                              alt="Logo LabtecOne"
-                             width={80}
-                             height={20}
-                             className="object-contain sm:w-[100px] sm:h-[24px]"
+                             width={110}
+                             height={30}
+                             className="object-contain sm:w-auto sm:h-[33px]"
                             />
+                            <div className='flex flex-col justify-center items-start leading-none'>
+                                <p>Labtec<span className='text-primary'>One</span></p>
+                                <span className='text-gray-600 text-xs'>{version}</span>
+                            </div>
                         </div>
 
 

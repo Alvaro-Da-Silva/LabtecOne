@@ -1,14 +1,3 @@
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Badge } from "./ui/badge"
-import LogoLabTec from '../../public/logo-labtec.png'
 import BgTeste from '../../public/wallpaper.jpg'
 import Image, { StaticImageData } from "next/image"
 import { Button } from "./ui/button"
