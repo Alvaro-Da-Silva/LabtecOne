@@ -67,7 +67,7 @@ export default function ImageCropper({ imageSrc, onSave, onCancel }: ImageCroppe
         <Button variant="outline" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button onClick={getCroppedImg}>Salvar</Button>
+        <Button className="cursor-pointer" onClick={getCroppedImg}>Salvar</Button>
       </div>
     </div>
   );

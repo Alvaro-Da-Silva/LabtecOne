@@ -34,12 +34,14 @@ import {
 import CardSites from '@/components/CardSites';
 import LogoLabTec from '../../public/logo-labtec-sem-texto.png'
 import Image from 'next/image';
+import Link from 'next/link';
 import { CardData, defaultCards } from '@/data/cardsData';
+import  Package  from '../../package.json';
 
 
 export default function Page() {
     const { email, username, firstName, lastName, logout, isAuthenticated } = useAuth();
-    const version = process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0';
+    
 
     // State de pesquisa
     const [searchTerm, setSearchTerm] = useState('');
@@ -120,7 +122,7 @@ export default function Page() {
                             />
                             <div className='flex flex-col justify-center items-start leading-none'>
                                 <p>Labtec<span className='text-primary'>One</span></p>
-                                <span className='text-gray-600 text-xs'>{version}</span>
+                                <span className='text-gray-600 text-xs'>{Package.version}</span>
                             </div>
                         </div>
 
@@ -187,9 +189,11 @@ export default function Page() {
                                     />
                                     </label>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem className='focus:bg-secondary/20 focus:text-primary cursor-pointer'>
-                                    <Settings className='focus:text-primary' />
-                                    Configurações
+                                <DropdownMenuItem className='focus:bg-secondary/20 focus:text-primary cursor-pointer' asChild>
+                                    <Link href="/Configs" className="flex items-center gap-2">
+                                        <Settings className='focus:text-primary' />
+                                        Configurações
+                                    </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     className='focus:bg-destructive/10 focus:text-destructive cursor-pointer'
