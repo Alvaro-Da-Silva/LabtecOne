@@ -5,13 +5,15 @@ import Link from 'next/link';
 
 // Contexts
 import { useAuth } from '../../../contexts/AuthContext';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { useState } from 'react';
 
 // UI
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Spinner } from "@/components/ui/spinner"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, Settings, Camera, User, Bell, Shield, Palette, Globe } from 'lucide-react';
+import { ArrowLeft, Settings, Camera, User, Bell, Shield, Palette, Globe, Sun, Moon } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import ImageCropper from '@/components/ImageCrooper';
@@ -29,16 +31,57 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from '@/components/ui/form';
+
+import Package from '../../../package.json';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+const baseSchema = z.object({
+    firstName: z.string()
+        .min(3, "Nome deve ter pelo menos 3 caracteres.")
+        .max(100, "Nome deve ter no máximo 100 caracteres.")
+        .nonempty("Nome é obrigatório."),
+    lastName: z.string()
+        .min(3, "Sobrenome deve ter pelo menos 3 caracteres.")
+        .max(100, "Sobrenome deve ter no máximo 100 caracteres.")
+        .nonempty("Sobrenome é obrigatório."),
+    username: z.string()
+        .min(3, "Nome de usuário deve ter pelo menos 3 caracteres.")
+        .max(50, "Nome de usuário deve ter no máximo 50 caracteres.")
+        .nonempty("Nome de usuário é obrigatório."),
+    email: z.string().email("Email inválido.").nonempty("Email é obrigatório."),
+    password: z.string()
+        .min(6, "Senha deve ter pelo menos 6 caracteres.")
+        .max(100, "Senha deve ter no máximo 100 caracteres.")
+        .optional(),
+})
 
 export default function ConfigsPage() {
     const { email, username, firstName, lastName, isAuthenticated } = useAuth();
-    const version = process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0';
+    const { theme, toggleTheme } = useTheme();
+
+    type FormValues = z.infer<typeof baseSchema>;
+    
+    const form = useForm<FormValues>({
+        mode: "onChange",
+        reValidateMode: "onChange",
+        resolver: zodResolver(baseSchema),
+        defaultValues: {
+            firstName: "",
+            lastName: "",
+            email: "",
+            username: "",
+            password: "",
+        }
+    })
 
     // Estados e funções para o diálogo de confirmação de logout
     const [cropOpen, setCropOpen] = useState(false);
@@ -52,12 +95,6 @@ export default function ConfigsPage() {
         }
         return null;
     });
-
-    // Estados de configurações
-    const [notifications, setNotifications] = useState(true);
-    const [darkMode, setDarkMode] = useState(false);
-    const [language, setLanguage] = useState('pt-BR');
-    const [autoSave, setAutoSave] = useState(true);
 
     const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -92,7 +129,7 @@ export default function ConfigsPage() {
     return (
         <>
             <div className=''>
-                <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-3 sm:px-5 h-14 border-b bg-white shadow-sm">
+                <header className="fixed top-0 left-0 right-0 z-50 flex items-center bg-background justify-between px-3 sm:px-5 h-14 border-b shadow-sm">
                     <div className="flex items-center gap-2">
                         <Link href="/">
                             <Button variant="ghost" size="sm" className="gap-2 cursor-pointer">
@@ -174,7 +211,6 @@ export default function ConfigsPage() {
                                         </Avatar>
                                         <div className="flex-1">
                                             <h3 className="font-medium">{firstName} {lastName}</h3>
-                                            <p className="text-sm text-muted-foreground">@{username}</p>
                                             <p className="text-sm text-muted-foreground">{email}</p>
                                         </div>
                                         <label className="cursor-pointer">
@@ -195,46 +231,94 @@ export default function ConfigsPage() {
                                 </CardContent>
                             </Card>
 
-                            {/* Seção de Notificações */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <Bell className="h-5 w-5" />
-                                        Notificações
-                                    </CardTitle>
-                                    <CardDescription>
-                                        Configure como você deseja receber notificações
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <div className="space-y-0.5">
-                                            <Label htmlFor="notifications">Receber notificações</Label>
-                                            <p className="text-sm text-muted-foreground">
-                                                Receba alertas sobre atualizações e atividades
-                                            </p>
-                                        </div>
-                                        <Switch
-                                            id="notifications"
-                                            checked={notifications}
-                                            onCheckedChange={setNotifications}
+                           {/* Seção de Informações da Conta */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    Informações da conta
+                                </CardTitle>
+                                <CardDescription>
+                                    Gerencie suas informações
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <Form {...form}>
+                                    <form className="space-y-4">
+                                        <FormField
+                                            control={form.control}
+                                            name="firstName"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Nome</FormLabel>
+                                                    <FormControl>
+                                                        <Input placeholder="Digite seu nome" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
                                         />
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <div className="space-y-0.5">
-                                            <Label htmlFor="auto-save">Salvamento automático</Label>
-                                            <p className="text-sm text-muted-foreground">
-                                                Salve automaticamente suas alterações
-                                            </p>
-                                        </div>
-                                        <Switch
-                                            id="auto-save"
-                                            checked={autoSave}
-                                            onCheckedChange={setAutoSave}
+                                        <FormField
+                                            control={form.control}
+                                            name="lastName"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Sobrenome</FormLabel>
+                                                    <FormControl>
+                                                        <Input placeholder="Digite seu sobrenome" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
                                         />
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                        <FormField
+                                            control={form.control}
+                                            name="username"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Nome de usuário</FormLabel>
+                                                    <FormControl>
+                                                        <Input placeholder="Digite seu nome de usuário" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="email"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Email</FormLabel>
+                                                    <FormControl>
+                                                        <Input placeholder="Digite seu email" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="password"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Senha</FormLabel>
+                                                    <FormControl>
+                                                        <Input type="password" placeholder="Digite sua nova senha" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <div className='flex justify-end'>
+                                            <Button className="cursor-pointer">
+                                                Salvar Configurações
+                                            </Button>
+                                        </div>       
+
+                                    </form>
+                                </Form>
+                            </CardContent>
+                        </Card>
 
                             {/* Seção de Aparência */}
                             <Card>
@@ -250,44 +334,25 @@ export default function ConfigsPage() {
                                 <CardContent className="space-y-4">
                                     <div className="flex items-center justify-between">
                                         <div className="space-y-0.5">
-                                            <Label htmlFor="dark-mode">Modo escuro</Label>
-                                            <p className="text-sm text-muted-foreground">
-                                                Ative o tema escuro para reduzir o cansaço visual
-                                            </p>
+                                            <Label className="text-base">Tema escuro</Label>
+                                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                {theme === 'dark' ? (
+                                                    <>
+                                                        <Moon className="h-4 w-4" />
+                                                        <span>Modo escuro ativado</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Sun className="h-4 w-4" />
+                                                        <span>Modo claro ativado</span>
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
                                         <Switch
-                                            id="dark-mode"
-                                            checked={darkMode}
-                                            onCheckedChange={setDarkMode}
+                                            checked={theme === 'dark'}
+                                            onCheckedChange={toggleTheme}
                                         />
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            {/* Seção de Idioma */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <Globe className="h-5 w-5" />
-                                        Idioma e Região
-                                    </CardTitle>
-                                    <CardDescription>
-                                        Configure o idioma da interface
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="language">Idioma</Label>
-                                        <Select value={language} onValueChange={setLanguage}>
-                                            <SelectTrigger className="w-full sm:w-[300px]">
-                                                <SelectValue placeholder="Selecione um idioma" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="pt-BR">Português (Brasil)</SelectItem>
-                                                <SelectItem value="en-US">English (US)</SelectItem>
-                                                <SelectItem value="es-ES">Español</SelectItem>
-                                            </SelectContent>
-                                        </Select>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -297,37 +362,18 @@ export default function ConfigsPage() {
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
                                         <Shield className="h-5 w-5" />
-                                        Segurança
+                                        Informações sobre a aplicação
                                     </CardTitle>
-                                    <CardDescription>
-                                        Informações sobre sua conta e segurança
-                                    </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="space-y-2">
-                                        <Label>Última sessão</Label>
-                                        <p className="text-sm text-muted-foreground">
-                                            Sessão atual ativa
-                                        </p>
-                                    </div>
-                                    <div className="space-y-2">
                                         <Label>Versão da aplicação</Label>
                                         <p className="text-sm text-muted-foreground">
-                                            {version}
+                                            {Package.version}
                                         </p>
                                     </div>
                                 </CardContent>
                             </Card>
-
-                            {/* Botões de ação */}
-                            <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                                <Button className="cursor-pointer flex-1">
-                                    Salvar Configurações
-                                </Button>
-                                <Button variant="outline" className="cursor-pointer flex-1">
-                                    Restaurar Padrões
-                                </Button>
-                            </div>
                         </div>
                     )}
                 </div>

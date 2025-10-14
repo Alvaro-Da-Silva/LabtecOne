@@ -83,19 +83,6 @@ export default function Page() {
         return null;
     });
 
-    // Função para lidar com o upload da imagem
-    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setTempImage(result);
-        setCropOpen(true);
-      };
-      reader.readAsDataURL(file);
-    }
-    };
     // Função para salvar a imagem cortada
     const handleSaveCropped = (cropped: string) => {
         setProfileImage(cropped);
@@ -107,7 +94,7 @@ export default function Page() {
     return (
         <>
             <div className=''>
-                <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-3 sm:px-5 h-14 border-b bg-white shadow-sm">
+                <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-background px-3 sm:px-5 h-14 border-b shadow-sm">
                     <div className="flex items-center gap-2">
                     </div>
                     
@@ -121,8 +108,8 @@ export default function Page() {
                              className="object-contain sm:w-auto sm:h-[33px]"
                             />
                             <div className='flex flex-col justify-center items-start leading-none'>
-                                <p>Labtec<span className='text-primary'>One</span></p>
-                                <span className='text-gray-600 text-xs'>{Package.version}</span>
+                                <p className="text-foreground">Labtec<span className='text-primary'>One</span></p>
+                                <span className='text-muted-foreground text-xs'>{Package.version}</span>
                             </div>
                         </div>
 
@@ -174,21 +161,6 @@ export default function Page() {
                                     </div>
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    className="focus:bg-secondary/20 focus:text-primary cursor-pointer"
-                                    onSelect={(e) => e.preventDefault()}
-                                >
-                                    <label className="flex items-center gap-2 cursor-pointer w-full">
-                                    <Camera className="focus:text-primary" />
-                                    Alterar foto de perfil
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageUpload}
-                                        className="absolute inset-0 opacity-0 cursor-pointer"
-                                    />
-                                    </label>
-                                </DropdownMenuItem>
                                 <DropdownMenuItem className='focus:bg-secondary/20 focus:text-primary cursor-pointer' asChild>
                                     <Link href="/Configs" className="flex items-center gap-2">
                                         <Settings className='focus:text-primary' />
@@ -293,14 +265,14 @@ export default function Page() {
                         <div className="m-2 sm:m-4 flex items-center justify-center gap-1 sm:gap-2 lg:ml-0 flex-wrap">
                             <Button
                                 variant="default"
-                                className={`size-8 bg-white hover:bg-white hover:text-black transition-opacity ${
+                                className={`size-8 bg-card hover:bg-muted border border-border text-foreground hover:text-foreground transition-opacity ${
                                     currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'opacity-100'
                                 }`}
                                 size="icon"
                                 onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
                                 disabled={currentPage === 1}
                             >
-                                <ChevronLeft color='black' />
+                                <ChevronLeft className="h-4 w-4" />
                             </Button>
                             {Array.from({ length: totalPages }, (_, index) => {
                                 const pageNumber = index + 1;
@@ -309,7 +281,7 @@ export default function Page() {
                                         key={pageNumber}
                                         variant="outline"
                                         className={`size-8 sm:size-9 rounded-full text-xs sm:text-sm ${
-                                            currentPage === pageNumber ? 'bg-[#0173F2] text-white hover:bg-[#0173F2] hover:text-white' : ''
+                                            currentPage === pageNumber ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-muted text-card-foreground'
                                         }`}
                                         size="icon"
                                         onClick={() => setCurrentPage(pageNumber)}
@@ -320,14 +292,14 @@ export default function Page() {
                             })}
                             <Button
                                 variant="default"
-                                className={`size-8 bg-white hover:bg-white hover:text-black transition-opacity ${
+                                className={`size-8 bg-card hover:bg-muted border border-border text-foreground hover:text-foreground transition-opacity ${
                                     currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'opacity-100'
                                 }`}
                                 size="icon"
                                 onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
                                 disabled={currentPage === totalPages}
                             >
-                                <ChevronRight color='black' />
+                                <ChevronRight className="h-4 w-4" />
                             </Button>
                         </div>
                     )}

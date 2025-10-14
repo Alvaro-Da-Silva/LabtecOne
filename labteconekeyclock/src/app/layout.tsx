@@ -1,6 +1,7 @@
 // RootLayout Component
 import { AuthProvider } from "../../contexts/AuthContext";
 import { GroupProvider } from "../../contexts/GroupContext";
+import { ThemeProvider } from "../../contexts/ThemeContext";
 import ClientWrapper from "./ClientWrapper"
 
 // Styles and Metadata
@@ -36,19 +37,21 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {/* Providers */}
-        <AuthProvider>
-          {
-            // Sidebar and Group Providers
-              <GroupProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            {
+              // Sidebar and Group Providers
+                <GroupProvider>
 
-                {/* Group Sidebar */}
-                <ClientWrapper>
-                  {children}
-                </ClientWrapper>
+                  {/* Group Sidebar */}
+                  <ClientWrapper>
+                    {children}
+                  </ClientWrapper>
 
-              </GroupProvider>
-          }
-        </AuthProvider>
+                </GroupProvider>
+            }
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
