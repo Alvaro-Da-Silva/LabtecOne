@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Spinner } from "@/components/ui/spinner"
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CircleAlert, LogOut, Settings,Camera, Search } from 'lucide-react';
+import { CircleAlert, LogOut, Settings, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import ImageCropper from '@/components/ImageCrooper';
 import {
@@ -94,10 +94,7 @@ export default function Page() {
     return (
         <>
             <div className=''>
-                <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-background px-3 sm:px-5 h-14 border-b shadow-sm">
-                    <div className="flex items-center gap-2">
-                    </div>
-                    
+                <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-background px-3 sm:px-5 h-14 border-b shadow-sm">   
                     <div className="flex flex-1 items-center justify-between">
                         <div className="flex-shrink-0 flex items-center gap-2">
                             <Image
@@ -279,8 +276,8 @@ export default function Page() {
                                 return (
                                     <Button
                                         key={pageNumber}
-                                        variant="outline"
-                                        className={`size-8 sm:size-9 rounded-full text-xs sm:text-sm ${
+                                        variant={currentPage === pageNumber ? "default" : "outline"}
+                                        className={`size-8 sm:size-9 rounded-full bg-primary text-xs sm:text-sm ${
                                             currentPage === pageNumber ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-card hover:bg-muted text-card-foreground'
                                         }`}
                                         size="icon"

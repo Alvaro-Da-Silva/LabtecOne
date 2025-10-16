@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Spinner } from "@/components/ui/spinner"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, Settings, Camera, User, Bell, Shield, Palette, Globe, Sun, Moon } from 'lucide-react';
+import { ArrowLeft, Settings, Camera, User, Shield, Palette, Sun, Moon } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import ImageCropper from '@/components/ImageCrooper';
@@ -291,19 +291,6 @@ export default function ConfigsPage() {
                                                     <FormLabel>Email</FormLabel>
                                                     <FormControl>
                                                         <Input placeholder="Digite seu email" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="password"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Senha</FormLabel>
-                                                    <FormControl>
-                                                        <Input type="password" placeholder="Digite sua nova senha" {...field} />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>
