@@ -1,7 +1,11 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
+import Package from '../../../package.json';
+
+//API
+import { UserServer } from '@/services/UserService';
 
 // Contexts
 import { useAuth } from '../../../contexts/AuthContext';
@@ -16,7 +20,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowLeft, Settings, Camera, User, Shield, Palette, Sun, Moon } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Toaster } from "@/components/ui/sonner";
 import ImageCropper from '@/components/ImageCrooper';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
     Dialog,
     DialogContent,
@@ -38,12 +46,10 @@ import {
     FormLabel,
     FormMessage,
 } from '@/components/ui/form';
+import { toast } from 'sonner';
 
-import Package from '../../../package.json';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-
+// Schema de validação dos campos do formulário de perfil
+// zod para validação e react-hook-form para gerenciamento do formulário
 const baseSchema = z.object({
     firstName: z.string()
         .min(3, "Nome deve ter pelo menos 3 caracteres.")
@@ -58,15 +64,13 @@ const baseSchema = z.object({
         .max(50, "Nome de usuário deve ter no máximo 50 caracteres.")
         .nonempty("Nome de usuário é obrigatório."),
     email: z.string().email("Email inválido.").nonempty("Email é obrigatório."),
-    password: z.string()
-        .min(6, "Senha deve ter pelo menos 6 caracteres.")
-        .max(100, "Senha deve ter no máximo 100 caracteres.")
-        .optional(),
 })
 
 export default function ConfigsPage() {
     const { email, username, firstName, lastName, isAuthenticated } = useAuth();
-    const { theme, toggleTheme } = useTheme();
+    const { theme, setTheme } = useTheme();
+    const [UserData, setUserData] = useState([])
+    const [loading, setLoading] = useState(true);
 
     type FormValues = z.infer<typeof baseSchema>;
     
@@ -79,22 +83,103 @@ export default function ConfigsPage() {
             lastName: "",
             email: "",
             username: "",
-            password: "",
         }
     })
 
-    // Estados e funções para o diálogo de confirmação de logout
+    // Buscar dados do usuário ao carregar
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const data = await UserServer.user();
+                
+                if (data) {
+                    setUserData(data);
+                    
+                    // Carregar tema do banco se disponível
+                    if (data.backgroundTheme && (data.backgroundTheme === 'BG_LIGHT' || data.backgroundTheme === 'BG_DARK')) {
+                        setTheme(data.backgroundTheme);
+                    }
+                    
+                    // Carregar foto de perfil do backend
+                    if (data.profilePictureUrl) {
+                        // Se for URL completa, usar diretamente
+                        if (data.profilePictureUrl.startsWith('http')) {
+                            setProfilePicture(data.profilePictureUrl);
+                        } else {
+                            // Se for nome de arquivo, buscar via API
+                            const imageData = await UserServer.GetPicture(data.profilePictureUrl);
+                            if (imageData) {
+                                setProfilePicture(imageData);
+                            } 
+                        }
+                    } 
+                }
+            } catch (error) {
+                console.error('Erro ao buscar dados do usuário:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (isAuthenticated) {
+            fetchUserData();
+        } else {
+            setLoading(false);
+        }
+    }, [isAuthenticated, setTheme]);
+
+    useEffect(() => {
+        if (isAuthenticated && firstName && lastName && email && username) {
+            form.reset({
+                firstName: firstName || "",
+                lastName: lastName || "",
+                email: email || "",
+                username: username || "",
+            });
+        }
+    }, [isAuthenticated, firstName, lastName, email, username, form]);
+
+
+
+    const handleUpdateProfile = async (data: FormValues) => {
+        try {
+            await UserServer.EditUser({
+                username: data.username,
+                firstName: data.firstName,
+                lastName: data.lastName,
+                email: data.email,
+            });
+        } catch (error) {
+            console.error('Erro ao atualizar perfil:', error);
+            toast.error('Erro ao atualizar perfil');
+        }
+    };
+
+    const handleToggleTheme = async () => {
+        const newTheme = theme === 'BG_LIGHT' ? 'BG_DARK' : 'BG_LIGHT';
+        
+        try {
+            // Salvar no backend
+            await UserServer.EditUser({
+                backgroundTheme: newTheme,
+            });
+            // Recarregar dados do backend para confirmar a mudança
+            const data = await UserServer.user();
+            if (data.backgroundTheme && (data.backgroundTheme === 'BG_LIGHT' || data.backgroundTheme === 'BG_DARK')) {
+                setTheme(data.backgroundTheme);
+            }
+        } catch (error) {
+            console.error('Erro ao atualizar tema:', error);
+            toast.error('Erro ao atualizar tema');
+        }
+    }
+
+    // Estado para imagem de perfil (do backend)
+    const [profilePicture, setProfilePicture] = useState<string | null>(null);
+
     const [cropOpen, setCropOpen] = useState(false);
     const [tempImage, setTempImage] = useState<string | null>(null);
     const [uploadingImage, setUploadingImage] = useState(false);
-
-    // Estado para imagem de perfil (local)
-    const [profilePicture, setProfilePicture] = useState<string | null>(() => {
-        if (typeof window !== "undefined") {
-            return localStorage.getItem("profileImage");
-        }
-        return null;
-    });
 
     const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -110,24 +195,103 @@ export default function ConfigsPage() {
     };
 
     // Função para salvar a imagem cortada
-    const handleSaveCropped = async (cropped: string) => {
+    const handleSaveCropped = async (croppedBase64: string) => {
+        console.log('handleSaveCropped chamado com base64 de tamanho:', croppedBase64.length);
         setUploadingImage(true);
         
         try {
-            // Salvar localmente
-            setProfilePicture(cropped);
-            localStorage.setItem("profileImage", cropped);
-            console.log('✅ Imagem de perfil atualizada com sucesso!');
+            // Converter base64 para blob
+            const response = await fetch(croppedBase64);
+            let blob = await response.blob();
+            
+            // Se o arquivo for maior que 800KB, redimensionar ainda mais
+            const MAX_SIZE = 800 * 1024; // 800KB
+            if (blob.size > MAX_SIZE) {
+                // Redimensionar a imagem
+                const img = new Image();
+                img.src = croppedBase64;
+                await img.decode();
+                
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Reduzir tamanho mantendo proporção
+                const maxDimension = 800;
+                let width = img.width;
+                let height = img.height;
+                
+                if (width > height && width > maxDimension) {
+                    height = (height * maxDimension) / width;
+                    width = maxDimension;
+                } else if (height > maxDimension) {
+                    width = (width * maxDimension) / height;
+                    height = maxDimension;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                ctx?.drawImage(img, 0, 0, width, height);
+                
+                // Converter com qualidade reduzida
+                const resizedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                const resizedResponse = await fetch(resizedBase64);
+                blob = await resizedResponse.blob();
+                
+                console.log('Imagem redimensionada:', { 
+                    tamanhoOriginal: response.blob().then(b => b.size),
+                    tamanhoNovo: blob.size 
+                });
+            }
+            
+            const file = new File([blob], 'profile.jpg', { type: 'image/jpeg' });
+            console.log('📤 Enviando arquivo:', file.size, 'bytes');
+            
+            // Enviar para o backend
+            await UserServer.PostPicture(file, 'profilePicture');
+            
+            console.log('✅ Upload concluído! Recarregando dados do usuário...');
+            
+            // Aguardar um pouco para o backend processar
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Recarregar dados do usuário para obter o nome da imagem atualizada
+            const userData = await UserServer.user();
+            console.log('📦 Dados do usuário após upload:', userData);
+            
+            if (userData?.profilePictureUrl) {
+                console.log('📸 URL da imagem atualizada:', userData.profilePictureUrl);
+                
+                // Se for URL completa do MinIO, usar diretamente
+                if (userData.profilePictureUrl.startsWith('http')) {
+                    setProfilePicture(userData.profilePictureUrl);
+                    console.log('✅ Imagem de perfil atualizada com sucesso!');
+                } else {
+                    // Se for nome de arquivo, buscar via API
+                    const imageData = await UserServer.GetPicture(userData.profilePictureUrl);
+                    
+                    if (imageData) {
+                        setProfilePicture(imageData);
+                        console.log('✅ Imagem de perfil atualizada com sucesso!');
+                    } else {
+                        console.warn('⚠️ Upload bem-sucedido mas não foi possível carregar a imagem');
+                    }
+                }
+            } else {
+                console.warn('⚠️ Upload bem-sucedido mas campo profilePictureUrl ainda está vazio');
+            }
         } catch (error) {
             console.error('❌ Erro ao processar imagem:', error);
+            // Não duplicar o toast, pois já é exibido no UserService
+        } finally {
+            setUploadingImage(false);
+            setCropOpen(false);
+            setTempImage(null);
         }
-        
-        setUploadingImage(false);
-        setCropOpen(false);
     };
 
     return (
         <>
+            <Toaster />
             <div className=''>
                 <header className="fixed top-0 left-0 right-0 z-50 flex items-center bg-background justify-between px-3 sm:px-5 h-14 border-b shadow-sm">
                     <div className="flex items-center gap-2">
@@ -160,7 +324,10 @@ export default function ConfigsPage() {
                                     <ImageCropper
                                         imageSrc={tempImage}
                                         onSave={handleSaveCropped}
-                                        onCancel={() => setCropOpen(false)}
+                                        onCancel={() => {
+                                            setCropOpen(false);
+                                            setTempImage(null);
+                                        }}
                                     />
                                 )
                             )}
@@ -243,7 +410,10 @@ export default function ConfigsPage() {
                             </CardHeader>
                             <CardContent>
                                 <Form {...form}>
-                                    <form className="space-y-4">
+                                    <form onSubmit={(e) => {
+                                        e.preventDefault();
+                                        form.handleSubmit(handleUpdateProfile)();
+                                    }} className="space-y-4">
                                         <FormField
                                             control={form.control}
                                             name="firstName"
@@ -297,7 +467,7 @@ export default function ConfigsPage() {
                                             )}
                                         />
                                         <div className='flex justify-end'>
-                                            <Button className="cursor-pointer">
+                                            <Button className="cursor-pointer" type='submit'>
                                                 Salvar Configurações
                                             </Button>
                                         </div>       
@@ -321,24 +491,24 @@ export default function ConfigsPage() {
                                 <CardContent className="space-y-4">
                                     <div className="flex items-center justify-between">
                                         <div className="space-y-0.5">
-                                            <Label className="text-base">Tema escuro</Label>
+                                            <Label className="text-base">Tema</Label>
                                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                                {theme === 'dark' ? (
+                                                {theme === 'BG_DARK' ? (
                                                     <>
                                                         <Moon className="h-4 w-4" />
-                                                        <span>Modo escuro ativado</span>
+                                                        <span>Tema escuro ativado</span>
                                                     </>
                                                 ) : (
                                                     <>
                                                         <Sun className="h-4 w-4" />
-                                                        <span>Modo claro ativado</span>
+                                                        <span>Tema claro ativado</span>
                                                     </>
                                                 )}
                                             </div>
                                         </div>
                                         <Switch
-                                            checked={theme === 'dark'}
-                                            onCheckedChange={toggleTheme}
+                                            checked={theme === 'BG_DARK'}
+                                            onCheckedChange={handleToggleTheme}
                                         />
                                     </div>
                                 </CardContent>

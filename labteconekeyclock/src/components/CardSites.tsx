@@ -1,3 +1,4 @@
+// Cartão simples para exibir um site (imagem, título, descrição e botão)
 import BgNotfound from '../../public/Not-found.png'
 import Image, { StaticImageData } from "next/image"
 import { Button } from "./ui/button"
@@ -13,7 +14,7 @@ export default function CardSites({title, description, link, foto}:
   return (
 
      <div className="w-full max-w-sm rounded-2xl overflow-hidden shadow-md bg-card hover:scale-101 transition-all duration-300 border border-border">
-      {/* Imagem */}
+      {/* Imagem: usa foto se existir, caso contrário usa placeholder */}
       <Image
         width={320}
         height={160}
@@ -22,7 +23,7 @@ export default function CardSites({title, description, link, foto}:
         className="h-32 sm:h-40 w-full object-cover"
       />
 
-      {/* Conteúdo */}
+      {/* Conteúdo: título, descrição e botão de ação */}
       <div className="p-3 sm:p-4">
         <h3 className="text-base sm:text-lg font-bold text-card-foreground flex items-center gap-2">
          {title}
@@ -32,6 +33,7 @@ export default function CardSites({title, description, link, foto}:
           {description}
         </p>
 
+        {/* Botão: abre o link em nova aba */}
         <Button onClick={() => window.open(link, '_blank')} className="mt-3 sm:mt-4 w-full cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm">
           Acessar
         </Button>

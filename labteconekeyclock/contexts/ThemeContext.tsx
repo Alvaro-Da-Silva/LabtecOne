@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'light' | 'dark';
+type Theme = 'BG_LIGHT' | 'BG_DARK';
 
 interface ThemeContextType {
   theme: Theme;
@@ -13,34 +13,43 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    // Inicializa com valor do localStorage se disponível
-    if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('theme') as Theme;
-      if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
-        return savedTheme;
-      }
+  const [theme, setThemeState] = useState<Theme>(() => {
+    // Prioriza variável de ambiente `NEXT_PUBLIC_DEFAULT_THEME`, depois localStorage
+    const envTheme = (process.env.NEXT_PUBLIC_DEFAULT_THEME as Theme | undefined) || undefined;
+    if (envTheme === 'BG_LIGHT' || envTheme === 'BG_DARK') {
+      return envTheme;
     }
-    return 'light'; // Valor padrão
+
+    // Inicializa com o tema salvo no localStorage
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme') as Theme | null;
+      return savedTheme || 'BG_LIGHT';
+    }
+    return 'BG_LIGHT';
   });
 
   useEffect(() => {
-    // Aplica ou remove a classe 'dark' no documentElement
+    // Aplica ou remove a classe 'dark' no documentElement (padrão Tailwind)
     if (typeof window !== 'undefined') {
       const root = document.documentElement;
-      if (theme === 'dark') {
+      if (theme === 'BG_DARK') {
         root.classList.add('dark');
+        root.style.colorScheme = 'dark';
       } else {
         root.classList.remove('dark');
+        root.style.colorScheme = 'light';
       }
-
-      // Salva no localStorage
+      // Persiste no localStorage
       localStorage.setItem('theme', theme);
     }
   }, [theme]);
 
+  const setTheme = (newTheme: Theme) => {
+    setThemeState(newTheme);
+  };
+
   const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+    setThemeState(prev => prev === 'BG_LIGHT' ? 'BG_DARK' : 'BG_LIGHT');
   };
 
   return (

@@ -1,8 +1,10 @@
+//Import de imagens usadas no card
 import { StaticImageData } from 'next/image';
 import BgEletric from '../../public/loginBackgroundEletric.svg';
 import BgKahoot from '../../public/Kahoot.png';
 import BgControle from '../../public/ControleEstoque.png';
 
+//Tipagem dos dados usados 
 export interface CardData {
   id: number;
   title: string;
@@ -12,6 +14,7 @@ export interface CardData {
   foto: string | StaticImageData;
 }
 
+//Dados de cada card
 export const defaultCards: CardData[] = [
     {
         id: 1,

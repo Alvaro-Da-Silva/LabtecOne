@@ -2,6 +2,9 @@
 
 import React from 'react';
 
+//API
+import { UserServer } from '@/services/UserService';
+
 // Contexts
 import { useAuth } from '../../contexts/AuthContext';
 import { useState } from 'react';
@@ -40,8 +43,8 @@ import  Package  from '../../package.json';
 
 
 export default function Page() {
-    const { email, username, firstName, lastName, logout, isAuthenticated } = useAuth();
-    
+    const { email, username, firstName, lastName, logout, isAuthenticated, token } = useAuth();
+    console.log("Token de autenticação:", token);
 
     // State de pesquisa
     const [searchTerm, setSearchTerm] = useState('');
@@ -75,28 +78,50 @@ export default function Page() {
     const [cropOpen, setCropOpen] = useState(false);
     const [tempImage, setTempImage] = useState<string | null>(null);
 
-        // Estado e função para o upload e crop da imagem de perfil
-        const [profileImage, setProfileImage] = useState<string | null>(() => {
-        if (typeof window !== "undefined") {
-            return localStorage.getItem("profileImage");
+    // Estado para a imagem de perfil (carregada do backend)
+    const [profileImage, setProfileImage] = useState<string | null>(null);
+
+    // Carrega a foto de perfil do backend ao montar o componente
+    React.useEffect(() => {
+        const fetchProfileImage = async () => {
+            try {
+                const data = await UserServer.user();
+                if (data.profilePictureUrl) {
+                    // Se for URL completa do MinIO, usar diretamente
+                    if (data.profilePictureUrl.startsWith('http')) {
+                        setProfileImage(data.profilePictureUrl);
+                       
+                    } else {
+                        // Se for nome de arquivo, buscar via API
+                        const imageData = await UserServer.GetPicture(data.profilePictureUrl);
+                        if (imageData) {
+                            setProfileImage(imageData);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Erro ao carregar foto de perfil:", error);
+            }
+        };
+
+        if (isAuthenticated) {
+            fetchProfileImage();
         }
-        return null;
-    });
+    }, [isAuthenticated]);
 
     // Função para salvar a imagem cortada
     const handleSaveCropped = (cropped: string) => {
         setProfileImage(cropped);
-        try { localStorage.setItem("profileImage", cropped); } catch {}
+        UserServer.EditUser({ profilePicture: cropped });
         setCropOpen(false);
     };
-
 
     return (
         <>
             <div className=''>
                 <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-background px-3 sm:px-5 h-14 border-b shadow-sm">   
                     <div className="flex flex-1 items-center justify-between">
-                        <div className="flex-shrink-0 flex items-center gap-2">
+                        <div className="flex items-center gap-2">
                             <Image
                              src={LogoLabTec}
                              alt="Logo LabtecOne"

@@ -11,8 +11,11 @@ interface ImageCropperProps {
 }
 
 export default function ImageCropper({ imageSrc, onSave, onCancel }: ImageCropperProps) {
+  // posição do corte (x, y)
   const [crop, setCrop] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  // nível de zoom do cropper
   const [zoom, setZoom] = useState<number>(1);
+  // área selecionada em pixels (usada para recortar no canvas)
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 
   const onCropComplete = useCallback((_: Area, croppedAreaPixels: Area) => {
@@ -20,33 +23,45 @@ export default function ImageCropper({ imageSrc, onSave, onCancel }: ImageCroppe
   }, []);
 
   const getCroppedImg = async () => {
-    if (!croppedAreaPixels) return;
+    
+    if (!croppedAreaPixels) {
+      console.warn('Nenhuma área selecionada para cortar');
+      return;
+    }
 
-    const image = new Image();
-    image.src = imageSrc;
-    await image.decode();
+    try {
+      const image = new Image();
+      image.src = imageSrc;
+      await image.decode();
 
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        console.error('Não foi possível obter contexto do canvas');
+        return;
+      }
 
-    canvas.width = croppedAreaPixels.width;
-    canvas.height = croppedAreaPixels.height;
+      canvas.width = croppedAreaPixels.width;
+      canvas.height = croppedAreaPixels.height;
 
-    ctx.drawImage(
-      image,
-      croppedAreaPixels.x,
-      croppedAreaPixels.y,
-      croppedAreaPixels.width,
-      croppedAreaPixels.height,
-      0,
-      0,
-      croppedAreaPixels.width,
-      croppedAreaPixels.height
-    );
+      ctx.drawImage(
+        image,
+        croppedAreaPixels.x,
+        croppedAreaPixels.y,
+        croppedAreaPixels.width,
+        croppedAreaPixels.height,
+        0,
+        0,
+        croppedAreaPixels.width,
+        croppedAreaPixels.height
+      );
 
-    const base64Image = canvas.toDataURL("image/jpeg");
-    onSave(base64Image);
+      // Converter para JPEG com compressão (qualidade 0.7 = ~70% para reduzir tamanho)
+      const base64Image = canvas.toDataURL("image/jpeg", 0.7);
+      onSave(base64Image);
+    } catch (error) {
+      console.error('Erro ao cortar imagem:', error);
+    }
   };
 
   return (
@@ -67,6 +82,7 @@ export default function ImageCropper({ imageSrc, onSave, onCancel }: ImageCroppe
         <Button variant="outline" onClick={onCancel}>
           Cancelar
         </Button>
+        {/* Salva a imagem recortada e chama onSave(base64) */}
         <Button className="cursor-pointer" onClick={getCroppedImg}>Salvar</Button>
       </div>
     </div>

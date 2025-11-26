@@ -121,3 +121,20 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Estilos customizados para autofill dos inputs */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px rgb(245 245 245) inset !important;
+  -webkit-text-fill-color: rgb(9 9 9) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Modo escuro - autofill */
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px rgb(30 30 30) inset !important;
+  -webkit-text-fill-color: rgb(229 229 229) !important;
+}
