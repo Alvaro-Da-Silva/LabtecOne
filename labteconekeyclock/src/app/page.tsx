@@ -7,6 +7,7 @@ import { UserServer } from '@/services/UserService';
 
 // Contexts
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useState } from 'react';
 
 // UI
@@ -44,7 +45,7 @@ import  Package  from '../../package.json';
 
 export default function Page() {
     const { email, username, firstName, lastName, logout, isAuthenticated, token } = useAuth();
-    console.log("Token de autenticação:", token);
+    const { setTheme } = useTheme();
 
     // State de pesquisa
     const [searchTerm, setSearchTerm] = useState('');
@@ -81,11 +82,18 @@ export default function Page() {
     // Estado para a imagem de perfil (carregada do backend)
     const [profileImage, setProfileImage] = useState<string | null>(null);
 
-    // Carrega a foto de perfil do backend ao montar o componente
+    // Carrega a foto de perfil e tema do backend ao montar o componente
     React.useEffect(() => {
-        const fetchProfileImage = async () => {
+        const fetchUserData = async () => {
             try {
                 const data = await UserServer.user();
+                
+                // Carregar tema do backend
+                if (data.backgroundTheme && (data.backgroundTheme === 'BG_LIGHT' || data.backgroundTheme === 'BG_DARK')) {
+                    setTheme(data.backgroundTheme);
+                }
+                
+                // Carregar foto de perfil
                 if (data.profilePictureUrl) {
                     // Se for URL completa do MinIO, usar diretamente
                     if (data.profilePictureUrl.startsWith('http')) {
@@ -100,14 +108,14 @@ export default function Page() {
                     }
                 }
             } catch (error) {
-                console.error("Erro ao carregar foto de perfil:", error);
+                console.error("Erro ao carregar dados do usuário:", error);
             }
         };
 
         if (isAuthenticated) {
-            fetchProfileImage();
+            fetchUserData();
         }
-    }, [isAuthenticated]);
+    }, [isAuthenticated, setTheme]);
 
     // Função para salvar a imagem cortada
     const handleSaveCropped = (cropped: string) => {

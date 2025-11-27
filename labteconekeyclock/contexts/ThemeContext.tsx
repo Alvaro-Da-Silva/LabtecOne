@@ -14,22 +14,33 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
-    // Prioriza variável de ambiente `NEXT_PUBLIC_DEFAULT_THEME`, depois localStorage
+    // Ler o tema que já foi aplicado pelo script inline (sessionStorage ou env var)
+    if (typeof window !== 'undefined') {
+      const cachedTheme = sessionStorage.getItem('userTheme') as Theme | null;
+      if (cachedTheme === 'BG_LIGHT' || cachedTheme === 'BG_DARK') {
+        return cachedTheme;
+      }
+    }
+
+    // Fallback para env var
     const envTheme = (process.env.NEXT_PUBLIC_DEFAULT_THEME as Theme | undefined) || undefined;
     if (envTheme === 'BG_LIGHT' || envTheme === 'BG_DARK') {
       return envTheme;
     }
 
-    // Inicializa com o tema salvo no localStorage
-    if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('theme') as Theme | null;
-      return savedTheme || 'BG_LIGHT';
-    }
+    // Padrão
     return 'BG_LIGHT';
   });
 
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
-    // Aplica ou remove a classe 'dark' no documentElement (padrão Tailwind)
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return; // Evita aplicar tema antes da montagem
+    
     if (typeof window !== 'undefined') {
       const root = document.documentElement;
       if (theme === 'BG_DARK') {
@@ -39,10 +50,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         root.classList.remove('dark');
         root.style.colorScheme = 'light';
       }
-      // Persiste no localStorage
-      localStorage.setItem('theme', theme);
+      // Salvar no sessionStorage para evitar flash na próxima navegação/reload
+      sessionStorage.setItem('userTheme', theme);
     }
-  }, [theme]);
+  }, [theme, mounted]);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
@@ -79,12 +90,6 @@ export const sendThemeToBackend = async (theme: Theme, userId?: string) => {
     timestamp: new Date().toISOString()
   };
   
-  // Aqui seria feita a chamada para a API:
-  // const response = await fetch('/api/user/theme', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(payload)
-  // });
   
   return payload;
 };

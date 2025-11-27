@@ -1,5 +1,4 @@
 // Cartão simples para exibir um site (imagem, título, descrição e botão)
-import BgNotfound from '../../public/Not-found.png'
 import Image, { StaticImageData } from "next/image"
 import { Button } from "./ui/button"
 
@@ -18,7 +17,7 @@ export default function CardSites({title, description, link, foto}:
       <Image
         width={320}
         height={160}
-        src={foto || BgNotfound}
+        src={foto || 'Not-found'}
         alt="Eletric Games"
         className="h-32 sm:h-40 w-full object-cover"
       />

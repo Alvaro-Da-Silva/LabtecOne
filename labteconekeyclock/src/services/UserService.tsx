@@ -21,7 +21,6 @@ export const UserServer = {
     // Strings vazias ou undefined não são enviadas ao backend
     EditUser: async (
         arg1?: Partial<{
-            username: string;
             firstName: string;
             lastName: string;
             email: string;
@@ -56,7 +55,6 @@ export const UserServer = {
                 body[key] = value;
             };
 
-            setIf('username', payload.username);
             setIf('firstName', payload.firstName);
             setIf('lastName', payload.lastName);
             setIf('email', payload.email);
@@ -72,7 +70,6 @@ export const UserServer = {
             return response;
         } catch (error) {
             console.error('Erro ao editar usuário:', error);
-            toast.error('Erro ao atualizar perfil');
             throw error;
         }
     },

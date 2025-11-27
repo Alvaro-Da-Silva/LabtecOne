@@ -34,17 +34,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-br">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {/* Inline script para aplicar o tema antes da hydration (evita flash de tema).
-            Prioriza `NEXT_PUBLIC_DEFAULT_THEME` quando definido no ambiente. */}
+    <html lang="pt-br" suppressHydrationWarning>
+      <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var envTheme='${process.env.NEXT_PUBLIC_DEFAULT_THEME || ''}';var t=envTheme||localStorage.getItem('theme');if(t==='BG_DARK'){document.documentElement.classList.add('dark');document.documentElement.style.colorScheme='dark';}else{document.documentElement.classList.remove('dark');document.documentElement.style.colorScheme='light';}}catch(e){console.error('Theme script error:',e);} })();`,
+            __html: `!function(){try{var t=sessionStorage.getItem('userTheme')||'${process.env.NEXT_PUBLIC_DEFAULT_THEME || ''}'||'BG_LIGHT',e=document.documentElement;'BG_DARK'===t?(e.classList.add('dark'),e.style.colorScheme='dark'):(e.classList.remove('dark'),e.style.colorScheme='light')}catch(t){}}();`,
           }}
         />
+      </head>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
+      >
         {/* Providers */}
         <ThemeProvider>
           <AuthProvider>

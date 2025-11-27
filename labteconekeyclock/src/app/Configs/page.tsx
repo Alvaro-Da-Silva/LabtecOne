@@ -59,10 +59,6 @@ const baseSchema = z.object({
         .min(3, "Sobrenome deve ter pelo menos 3 caracteres.")
         .max(100, "Sobrenome deve ter no máximo 100 caracteres.")
         .nonempty("Sobrenome é obrigatório."),
-    username: z.string()
-        .min(3, "Nome de usuário deve ter pelo menos 3 caracteres.")
-        .max(50, "Nome de usuário deve ter no máximo 50 caracteres.")
-        .nonempty("Nome de usuário é obrigatório."),
     email: z.string().email("Email inválido.").nonempty("Email é obrigatório."),
 })
 
@@ -82,7 +78,6 @@ export default function ConfigsPage() {
             firstName: "",
             lastName: "",
             email: "",
-            username: "",
         }
     })
 
@@ -129,26 +124,24 @@ export default function ConfigsPage() {
     }, [isAuthenticated, setTheme]);
 
     useEffect(() => {
-        if (isAuthenticated && firstName && lastName && email && username) {
+        if (isAuthenticated && firstName && lastName && email ) {
             form.reset({
                 firstName: firstName || "",
                 lastName: lastName || "",
                 email: email || "",
-                username: username || "",
             });
         }
-    }, [isAuthenticated, firstName, lastName, email, username, form]);
-
+    }, [isAuthenticated, firstName, lastName, email, form]);
 
 
     const handleUpdateProfile = async (data: FormValues) => {
         try {
             await UserServer.EditUser({
-                username: data.username,
                 firstName: data.firstName,
                 lastName: data.lastName,
                 email: data.email,
             });
+            toast.success('Perfil atualizado com sucesso!');
         } catch (error) {
             console.error('Erro ao atualizar perfil:', error);
             toast.error('Erro ao atualizar perfil');
@@ -244,43 +237,39 @@ export default function ConfigsPage() {
             }
             
             const file = new File([blob], 'profile.jpg', { type: 'image/jpeg' });
-            console.log('📤 Enviando arquivo:', file.size, 'bytes');
+            console.log('Enviando arquivo:', file.size, 'bytes');
             
             // Enviar para o backend
             await UserServer.PostPicture(file, 'profilePicture');
             
-            console.log('✅ Upload concluído! Recarregando dados do usuário...');
+            console.log('Upload concluído! Recarregando dados do usuário...');
             
             // Aguardar um pouco para o backend processar
             await new Promise(resolve => setTimeout(resolve, 500));
             
             // Recarregar dados do usuário para obter o nome da imagem atualizada
             const userData = await UserServer.user();
-            console.log('📦 Dados do usuário após upload:', userData);
+            console.log('Dados do usuário após upload:', userData);
             
             if (userData?.profilePictureUrl) {
-                console.log('📸 URL da imagem atualizada:', userData.profilePictureUrl);
+                console.log('URL da imagem atualizada:', userData.profilePictureUrl);
                 
                 // Se for URL completa do MinIO, usar diretamente
                 if (userData.profilePictureUrl.startsWith('http')) {
                     setProfilePicture(userData.profilePictureUrl);
-                    console.log('✅ Imagem de perfil atualizada com sucesso!');
+                    console.log('Imagem de perfil atualizada com sucesso!');
                 } else {
                     // Se for nome de arquivo, buscar via API
                     const imageData = await UserServer.GetPicture(userData.profilePictureUrl);
                     
                     if (imageData) {
                         setProfilePicture(imageData);
-                        console.log('✅ Imagem de perfil atualizada com sucesso!');
-                    } else {
-                        console.warn('⚠️ Upload bem-sucedido mas não foi possível carregar a imagem');
-                    }
+                        console.log('Imagem de perfil atualizada com sucesso!');
+                    } 
                 }
-            } else {
-                console.warn('⚠️ Upload bem-sucedido mas campo profilePictureUrl ainda está vazio');
-            }
+            } 
         } catch (error) {
-            console.error('❌ Erro ao processar imagem:', error);
+            console.error('Erro ao processar imagem:', error);
             // Não duplicar o toast, pois já é exibido no UserService
         } finally {
             setUploadingImage(false);
@@ -435,19 +424,6 @@ export default function ConfigsPage() {
                                                     <FormLabel>Sobrenome</FormLabel>
                                                     <FormControl>
                                                         <Input placeholder="Digite seu sobrenome" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="username"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Nome de usuário</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="Digite seu nome de usuário" {...field} />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>
