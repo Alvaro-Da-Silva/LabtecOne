@@ -35,6 +35,7 @@
     "react-dom": "^19.1.2",
     "react-easy-crop": "^5.5.3",
     "react-hook-form": "^7.64.0",
+    "sharp": "^0.34.5",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
     "zod": "^4.1.12"
