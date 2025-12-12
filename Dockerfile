@@ -1,31 +1,38 @@
-FROM node:20-alpine AS deps
+FROM node:20-alpine AS base
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
+ARG NEXT_PUBLIC_API_BASE_URL
+ARG NEXT_PUBLIC_KEYCLOAK_URL
+ARG NEXT_PUBLIC_KEYCLOAK_REALM
+ARG NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
+ARG NEXT_PUBLIC_BASE_URL
+
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_KEYCLOAK_URL=$NEXT_PUBLIC_KEYCLOAK_URL
+ENV NEXT_PUBLIC_KEYCLOAK_REALM=$NEXT_PUBLIC_KEYCLOAK_REALM
+ENV NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=$NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
+ENV NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL
+
+FROM base AS deps
 COPY package.json package-lock.json ./
 RUN npm ci
 
-
-FROM node:20-alpine AS builder
+FROM base AS builder
 WORKDIR /app
-COPY . .
 COPY --from=deps /app/node_modules ./node_modules
+COPY . .
 RUN npm run build
 
-
-FROM node:20-alpine AS runner
-ENV NODE_ENV=production
-
+FROM base AS runner
 WORKDIR /app
 
-RUN addgroup --system --gid 1001 nextjs \
-    && adduser --system --uid 1001 nextjs
+ENV NODE_ENV=production
 
-COPY --from=builder /app/build/standalone ./standalone
-COPY --from=builder /app/build/static ./public/_next/static
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 
-USER nextjs
-
-EXPOSE 3000
-
-CMD ["node", "standalone/server.js"]
+EXPOSE 3001
+ENV PORT=3001
+CMD ["node", "server.js"]
