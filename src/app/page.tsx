@@ -127,7 +127,7 @@ export default function Page() {
     return (
         <>
             <div className=''>
-                <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-background px-3 sm:px-5 h-14 border-b shadow-sm">   
+                <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-background px-2 xs:px-3 sm:px-5 h-14 border-b shadow-sm">   
                     <div className="flex flex-1 items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Image
@@ -135,9 +135,9 @@ export default function Page() {
                              alt="Logo LabtecOne"
                              width={110}
                              height={30}
-                             className="object-contain sm:w-auto sm:h-[33px]"
+                             className="object-contain w-[42px] xs:w-auto sm:w-auto sm:h-[33px]"
                             />
-                            <div className='flex flex-col justify-center items-start leading-none'>
+                            <div className='hidden xs:flex flex-col justify-center items-start leading-none'>
                                 <p className="text-foreground">Labtec<span className='text-primary'>One</span></p>
                                 <span className='text-muted-foreground text-xs'>{Package.version}</span>
                             </div>
@@ -145,25 +145,24 @@ export default function Page() {
 
 
                         <DropdownMenu>
-                            <div className='flex flex-row items-center gap-2 sm:gap-5'>
-                                
+                            <div className='flex flex-row items-center gap-3 sm:gap-5'>
                                 <div className="relative w-32 sm:w-48 md:w-64 max-w-sm">
                                     <Search className="absolute left-3 top-2.5 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                                     <Input
                                         type="text"
                                         placeholder="Pesquisar..."
-                                        className="pl-8 sm:pl-10 text-sm"
+                                        className="pl-8 sm:pl-10 text-sm h-9 sm:h-10"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
                                 </div>
 
                                 <DropdownMenuTrigger className='flex flex-row items-center gap-7'>
-                                    <Avatar className='cursor-pointer'>
+                                    <Avatar className='cursor-pointer h-9 w-9 sm:h-10 sm:w-10'>
                                         {profileImage ? (
                                             <AvatarImage src={profileImage} alt="Foto de perfil" />
                                         ) : (
-                                            <AvatarFallback>
+                                            <AvatarFallback className="text-sm">
                                                 {firstName && lastName
                                                 ? `${firstName.charAt(0)}${lastName.charAt(0)}`
                                                 : username?.charAt(0)}
@@ -210,13 +209,13 @@ export default function Page() {
                     
                     {/* Dialog controlado para Logout (fora do Dropdown) */}
                     <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-                        <DialogContent className='gap-0 sm:max-w-[284px]'>
+                        <DialogContent className='gap-0 max-w-[90vw] xs:max-w-[284px] sm:max-w-[284px]'>
                             <DialogHeader className='flex items-center mb-3 gap-1'>
-                                <DialogTitle className='flex flex-col items-center gap-1'>
-                                    <CircleAlert className='h-5 w-5 text-destructive' />
+                                <DialogTitle className='flex flex-col items-center gap-1 text-base sm:text-lg'>
+                                    <CircleAlert className='h-4 w-4 sm:h-5 sm:w-5 text-destructive' />
                                     <span>Sair da sua conta?</span>
                                 </DialogTitle>
-                                <DialogDescription className='text-center text-sm text-muted-foreground mt-1 mb-3'>
+                                <DialogDescription className='text-center text-xs sm:text-sm text-muted-foreground mt-1 mb-3'>
                                     Será necessário fazer login de novo.
                                 </DialogDescription>
                             </DialogHeader>
@@ -240,7 +239,7 @@ export default function Page() {
                     </Dialog>
 
                     <Dialog open={cropOpen} onOpenChange={setCropOpen}>
-                        <DialogContent className="sm:max-w-[400px]">
+                        <DialogContent className="max-w-[95vw] xs:max-w-[400px] sm:max-w-[400px]">
                             <DialogHeader>
                             <DialogTitle>Ajustar foto de perfil</DialogTitle>
                             </DialogHeader>
@@ -257,7 +256,7 @@ export default function Page() {
 
                 </header>
                 {/* Div para os cards de apps, compensando o header fixo com padding-top */}
-                <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3 sm:gap-5 p-3 sm:p-5 pt-16 sm:pt-20 flex-1 bg-background justify-items-center max-w-7xl mx-auto w-full`}>
+                <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-2 xs:gap-3 sm:gap-5 px-2 xs:px-3 sm:px-5 pb-2 xs:pb-3 sm:pb-5 pt-[72px] sm:pt-20 flex-1 bg-background justify-items-center max-w-7xl mx-auto w-full`}>
                     {!isAuthenticated ? (
                         // Mostrar spinner centralizado apenas na área de cards enquanto não autenticado
                         <div className="col-span-full flex items-center justify-center py-16 sm:py-24">

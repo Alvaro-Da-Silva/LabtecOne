@@ -23,7 +23,7 @@ export default function CardSites({title, description, link, foto}:
       />
 
       {/* Conteúdo: título, descrição e botão de ação */}
-      <div className="p-3 sm:p-4">
+      <div className="p-2 xs:p-3 sm:p-4">
         <h3 className="text-base sm:text-lg font-bold text-card-foreground flex items-center gap-2">
          {title}
         </h3>
@@ -33,7 +33,7 @@ export default function CardSites({title, description, link, foto}:
         </p>
 
         {/* Botão: abre o link em nova aba */}
-        <Button onClick={() => window.open(link, '_blank')} className="mt-3 sm:mt-4 w-full cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm">
+        <Button onClick={() => window.open(link, '_blank')} className="mt-2 xs:mt-3 sm:mt-4 w-full cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm">
           Acessar
         </Button>
       </div>

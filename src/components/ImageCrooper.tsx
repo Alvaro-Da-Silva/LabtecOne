@@ -65,8 +65,8 @@ export default function ImageCropper({ imageSrc, onSave, onCancel }: ImageCroppe
   };
 
   return (
-    <div>
-      <div className="relative w-full h-64 bg-black">
+    <div className="w-full">
+      <div className="relative w-full h-52 xs:h-60 sm:h-64 bg-black rounded-md overflow-hidden">
         <Cropper
           image={imageSrc}
           crop={crop}

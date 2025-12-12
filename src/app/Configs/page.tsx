@@ -65,7 +65,7 @@ const baseSchema = z.object({
 export default function ConfigsPage() {
     const { email, username, firstName, lastName, isAuthenticated } = useAuth();
     const { theme, setTheme } = useTheme();
-    const [UserData, setUserData] = useState([])
+    const [UserData, setUserData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
     type FormValues = z.infer<typeof baseSchema>;
@@ -124,14 +124,14 @@ export default function ConfigsPage() {
     }, [isAuthenticated, setTheme]);
 
     useEffect(() => {
-        if (isAuthenticated && firstName && lastName && email ) {
+        if (UserData){
             form.reset({
-                firstName: firstName || "",
-                lastName: lastName || "",
-                email: email || "",
+                firstName: UserData.firstName || "",
+                lastName: UserData.lastName || "",
+                email: UserData.email || "",
             });
         }
-    }, [isAuthenticated, firstName, lastName, email, form]);
+    }, [UserData, form]);
 
 
     const handleUpdateProfile = async (data: FormValues) => {
@@ -141,6 +141,10 @@ export default function ConfigsPage() {
                 lastName: data.lastName,
                 email: data.email,
             });
+
+            const updateduserdata = await UserServer.user();
+            setUserData(updateduserdata);
+
             toast.success('Perfil atualizado com sucesso!');
         } catch (error) {
             console.error('Erro ao atualizar perfil:', error);
@@ -270,7 +274,6 @@ export default function ConfigsPage() {
             } 
         } catch (error) {
             console.error('Erro ao processar imagem:', error);
-            // Não duplicar o toast, pois já é exibido no UserService
         } finally {
             setUploadingImage(false);
             setCropOpen(false);
@@ -282,7 +285,7 @@ export default function ConfigsPage() {
         <>
             <Toaster />
             <div className=''>
-                <header className="fixed top-0 left-0 right-0 z-50 flex items-center bg-background justify-between px-3 sm:px-5 h-14 border-b shadow-sm">
+                <header className="fixed top-0 left-0 right-0 z-50 flex items-center bg-background justify-between px-2 xs:px-3 sm:px-5 h-14 border-b shadow-sm">
                     <div className="flex items-center gap-2">
                         <Link href="/">
                             <Button variant="ghost" size="sm" className="gap-2 cursor-pointer">
@@ -293,7 +296,7 @@ export default function ConfigsPage() {
                     </div>
                     
                     <Dialog open={cropOpen} onOpenChange={setCropOpen}>
-                        <DialogContent className="sm:max-w-[400px]">
+                        <DialogContent className="max-w-[95vw] xs:max-w-[400px] sm:max-w-[400px]">
                             <DialogHeader>
                                 <DialogTitle>
                                     {uploadingImage ? 'Salvando imagem...' : 'Ajustar foto de perfil'}
@@ -325,7 +328,7 @@ export default function ConfigsPage() {
                 </header>
 
                 {/* Conteúdo principal das configurações */}
-                <div className="pt-16 sm:pt-20 p-3 sm:p-5 bg-background min-h-screen">
+                <div className="pt-16 sm:pt-20 p-2 xs:p-3 sm:p-5 bg-background min-h-screen">
                     {!isAuthenticated ? (
                         <div className="flex items-center justify-center py-16 sm:py-24">
                             <div className="flex flex-col items-center gap-2 sm:gap-3">
@@ -334,7 +337,7 @@ export default function ConfigsPage() {
                             </div>
                         </div>
                     ) : (
-                        <div className="max-w-4xl mx-auto space-y-6">
+                        <div className="max-w-4xl mx-auto space-y-6 px-1 xs:px-0">
                             {/* Título da página */}
                             <div className="flex items-center gap-3 mb-6">
                                 <Settings className="h-6 w-6 text-primary" />
@@ -349,31 +352,32 @@ export default function ConfigsPage() {
                                         Perfil do Usuário
                                     </CardTitle>
                                     <CardDescription>
-                                        Gerencie suas informações pessoais e foto de perfil
+                                        Gerencie suas informações pessoais 
                                     </CardDescription>
                                 </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="flex items-center gap-4">
-                                        <Avatar className="h-16 w-16">
+                                <CardContent className="space-y-3 sm:space-y-4">
+                                    <div className="flex flex-col xs:flex-row items-center gap-3 sm:gap-4">
+                                        <Avatar className="h-14 w-14 sm:h-16 sm:w-16 flex-shrink-0">
                                             {profilePicture ? (
                                                 <AvatarImage src={profilePicture} alt="Foto de perfil" />
                                             ) : (
-                                                <AvatarFallback className="text-lg">
+                                                <AvatarFallback className="text-base sm:text-lg">
                                                     {firstName && lastName
                                                     ? `${firstName.charAt(0)}${lastName.charAt(0)}`
                                                     : username?.charAt(0)}
                                                 </AvatarFallback>
                                             )}
                                         </Avatar>
-                                        <div className="flex-1">
-                                            <h3 className="font-medium">{firstName} {lastName}</h3>
-                                            <p className="text-sm text-muted-foreground">{email}</p>
+                                        <div className="flex-1 text-center xs:text-left min-w-0">
+                                            <h3 className="font-medium text-sm sm:text-base truncate">{firstName} {lastName}</h3>
+                                            <p className="text-xs sm:text-sm text-muted-foreground truncate">{email}</p>
                                         </div>
-                                        <label className="cursor-pointer">
-                                            <Button variant="outline" size="sm" asChild>
-                                                <span>
-                                                    <Camera className="h-4 w-4 mr-2" />
-                                                    Alterar Foto
+                                        <label className="cursor-pointer flex-shrink-0 w-full xs:w-auto">
+                                            <Button variant="outline" size="sm" asChild className="w-full xs:w-auto">
+                                                <span className="text-xs sm:text-sm">
+                                                    <Camera className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                                                    <span className="hidden xs:inline">Alterar Foto</span>
+                                                    <span className="xs:hidden">Foto</span>
                                                 </span>
                                             </Button>
                                             <input
@@ -408,11 +412,11 @@ export default function ConfigsPage() {
                                             name="firstName"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel>Nome</FormLabel>
+                                                    <FormLabel className="text-sm">Nome</FormLabel>
                                                     <FormControl>
-                                                        <Input placeholder="Digite seu nome" {...field} />
+                                                        <Input placeholder="Digite seu nome" className="h-9 sm:h-10 text-sm" {...field} />
                                                     </FormControl>
-                                                    <FormMessage />
+                                                    <FormMessage className="text-xs" />
                                                 </FormItem>
                                             )}
                                         />
@@ -421,11 +425,11 @@ export default function ConfigsPage() {
                                             name="lastName"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel>Sobrenome</FormLabel>
+                                                    <FormLabel className="text-sm">Sobrenome</FormLabel>
                                                     <FormControl>
-                                                        <Input placeholder="Digite seu sobrenome" {...field} />
+                                                        <Input placeholder="Digite seu sobrenome" className="h-9 sm:h-10 text-sm" {...field} />
                                                     </FormControl>
-                                                    <FormMessage />
+                                                    <FormMessage className="text-xs" />
                                                 </FormItem>
                                             )}
                                         />
@@ -434,16 +438,16 @@ export default function ConfigsPage() {
                                             name="email"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel>Email</FormLabel>
+                                                    <FormLabel className="text-sm">Email</FormLabel>
                                                     <FormControl>
-                                                        <Input placeholder="Digite seu email" {...field} />
+                                                        <Input placeholder="Digite seu email" className="h-9 sm:h-10 text-sm" {...field} />
                                                     </FormControl>
-                                                    <FormMessage />
+                                                    <FormMessage className="text-xs" />
                                                 </FormItem>
                                             )}
                                         />
                                         <div className='flex justify-end'>
-                                            <Button className="cursor-pointer" type='submit'>
+                                            <Button className="cursor-pointer w-full xs:w-auto text-sm" type='submit'>
                                                 Salvar Configurações
                                             </Button>
                                         </div>       
@@ -456,28 +460,28 @@ export default function ConfigsPage() {
                             {/* Seção de Aparência */}
                             <Card>
                                 <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <Palette className="h-5 w-5" />
+                                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                                        <Palette className="h-4 w-4 sm:h-5 sm:w-5" />
                                         Aparência
                                     </CardTitle>
-                                    <CardDescription>
+                                    <CardDescription className="text-xs sm:text-sm">
                                         Personalize a aparência da aplicação
                                     </CardDescription>
                                 </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <div className="space-y-0.5">
-                                            <Label className="text-base">Tema</Label>
-                                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <CardContent className="space-y-3 sm:space-y-4">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div className="space-y-0.5 flex-1 min-w-0">
+                                            <Label className="text-sm sm:text-base">Tema</Label>
+                                            <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
                                                 {theme === 'BG_DARK' ? (
                                                     <>
-                                                        <Moon className="h-4 w-4" />
-                                                        <span>Tema escuro ativado</span>
+                                                        <Moon className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                                                        <span className="truncate">Tema escuro ativado</span>
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <Sun className="h-4 w-4" />
-                                                        <span>Tema claro ativado</span>
+                                                        <Sun className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                                                        <span className="truncate">Tema claro ativado</span>
                                                     </>
                                                 )}
                                             </div>
@@ -485,6 +489,7 @@ export default function ConfigsPage() {
                                         <Switch
                                             checked={theme === 'BG_DARK'}
                                             onCheckedChange={handleToggleTheme}
+                                            className="flex-shrink-0"
                                         />
                                     </div>
                                 </CardContent>
